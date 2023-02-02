@@ -1,40 +1,32 @@
-import kotlin.math.absoluteValue
+import java.util.*
+import kotlin.math.abs
 
-private var n = 0
-private lateinit var foods: Array<Pair<Long, Long>>
-private lateinit var selected: ArrayList<Pair<Long, Long>>
-private var answer = Long.MAX_VALUE
+val tastes = ArrayList<Pair<Long, Long>>()
+var min = Long.MAX_VALUE
+lateinit var visited: BooleanArray
 
-fun main() {
-    val br = System.`in`.bufferedReader()
-    n = br.readLine().toInt()
-    foods = Array(n) { Pair(0L, 0L) }
-    selected = arrayListOf()
+fun main() = with(System.`in`.bufferedReader()) {
+    val n = readLine().toInt()
+
     repeat(n) {
-        br.readLine().split(" ").map { it.toLong() }.apply {
-            foods[it] = Pair(this[0], this[1])
+        readLine().split(" ").map { it.toLong() }.run {
+            tastes.add(this[0] to this[1])
         }
     }
-    rec(0)
-    println(answer)
+
+    visited = BooleanArray(tastes.size)
+    DFS(0, 1, 0, true, "")
+    println(min)
 }
 
-private fun rec(idx: Int) {
-    if (idx == n) {
-        if (selected.size >= 1) {
-            var s = 1L
-            var b = 0L
-            selected.forEach {
-                s *= it.first
-                b += it.second
-            }
-            answer = Math.min((s - b).absoluteValue, answer)
-        }
-    } else {
-        selected.add(foods[idx])
-        rec(idx + 1)
-        selected.dropLast(1)
+fun DFS(start: Int, sour: Long, hot: Long, isFirst: Boolean, test: String) {
+    if(!isFirst) min = min.coerceAtMost(abs(sour - hot))
 
-        rec(idx + 1)
+    for(i in start until visited.size) {
+        if(!visited[i]) {
+            visited[i] = true
+            DFS(i, sour * tastes[i].first, hot + tastes[i].second, false, "$test + $i")
+            visited[i] = false
+        }
     }
 }
